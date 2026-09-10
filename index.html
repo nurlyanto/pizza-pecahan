@@ -1,1 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pizza Pecahan</title>
+  <meta name="description" content="Simulasi interaktif pecahan dalam bentuk pizza: konsep pecahan, konversi ke desimal, dan ke persen." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #f7f1e5;
+      --paper: #fffdf8;
+      --ink: #1a1f1c;
+      --muted: #5c635f;
+      --line: #ddd4c4;
+      --green: #2f5d3f;
+      --green-deep: #264c32;
+      --orange: #e5a23b;
+      --chip: #efe6d2;
+      --shadow: 0 18px 50px rgba(38, 44, 36, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Outfit", system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #ffe9c4 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, #d7eadc 0%, transparent 50%),
+        var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
+    .eyebrow {
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.05;
+      font-weight: 700;
+    }
+    .lede { margin-top: 12px; color: var(--muted); font-size: 17px; max-width: 46ch; }
+    .stage { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 28px; }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+    .card h2, .acc-trigger h2 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 22px;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .hint { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+    .pizza-box { display: grid; place-items: center; min-height: 360px; }
+    svg.pizza { width: min(340px, 88%); height: auto; filter: drop-shadow(0 16px 24px rgba(139, 90, 34, 0.25)); }
+    .controls { display: grid; gap: 16px; }
+    .ctrl label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-weight: 600; font-size: 14px; margin-bottom: 6px;
+    }
+    .ctrl output { font-family: "Fraunces", serif; font-size: 22px; color: var(--green); }
+    input[type="range"] { width: 100%; accent-color: var(--green); height: 8px; }
+    .quick { display: flex; flex-wrap: wrap; gap: 8px; }
+    .quick button, .tabs button {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--ink);
+      transition: background .2s ease, color .2s ease, border-color .2s ease, transform .15s ease;
+    }
+    .quick button:hover { border-color: var(--green); color: var(--green); }
+    .quick button:active, .tabs button:active { transform: scale(0.96); }
+    .eq {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 8px;
+    }
+    .eq-item { background: var(--cream); border-radius: 16px; padding: 14px 10px; text-align: center; }
+    .eq-item small { display: block; color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+    .eq-item strong { font-family: "Fraunces", serif; font-size: clamp(22px, 3vw, 34px); display: block; }
+    .eq-op { align-self: center; font-size: 22px; color: var(--muted); }
+    .frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; }
+    .frac .num { border-bottom: 3px solid var(--ink); padding: 0 8px 4px; min-width: 1.4em; }
+    .frac .den { padding: 4px 8px 0; }
+    .steps { display: grid; gap: 10px; }
+    .step { display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; }
+    .n {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--green); color: #fff; display: grid; place-items: center;
+      font-weight: 700; font-size: 13px;
+    }
+    .step p { font-size: 15px; color: var(--ink); line-height: 1.5; }
+    .step p code, code.chip {
+      background: var(--chip); border-radius: 6px; padding: 1px 6px; font-family: ui-monospace, monospace;
+    }
+    .tabs { display: flex; gap: 8px; margin: 28px 0 14px; flex-wrap: wrap; }
+    .tabs button.active { background: var(--green); color: #fffdf8; border-color: var(--green); }
+    .accordion { display: grid; gap: 12px; }
+    .acc-item {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      scroll-margin-top: 16px;
+    }
+    .acc-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px;
+      background: none;
+      border: 0;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+    }
+    .acc-trigger h2 { margin: 0 0 4px; }
+    .acc-trigger .hint { margin: 0; }
+    .chevron {
+      width: 24px; height: 24px; flex-shrink: 0; color: var(--green);
+      transition: transform .3s cubic-bezier(.2,0,0,1);
+    }
+    .acc-item.open .chevron { transform: rotate(180deg); }
+    .acc-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .38s cubic-bezier(.2,0,0,1);
+    }
+    .acc-item.open .acc-panel { grid-template-rows: 1fr; }
+    .acc-panel-inner { overflow: hidden; min-height: 0; }
+    .acc-body { padding: 0 22px 22px; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+    th { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: var(--cream); }
+    footer { margin-top: 36px; color: var(--muted); font-size: 13px; text-align: center; }
+    .bar-wrap { margin-top: 8px; }
+    .bar-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .bar { height: 18px; background: var(--chip); border-radius: 999px; overflow: hidden; }
+    .bar > span {
+      display: block; height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--green), var(--green-deep));
+      transition: width .35s ease;
+    }
+    @media (max-width: 860px) {
+      .stage, .eq { grid-template-columns: 1fr; }
+      .eq-op { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .acc-panel, .chevron, .bar > span { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">Simulasi matematika interaktif</div>
+      <h1>Pizza Pecahan</h1>
+      <p class="lede">Geser pembilang dan penyebut. Lihat potongan pizza berubah, lalu buka menu di bawah untuk konsep, desimal, dan persen.</p>
+    </header>
 
+    <div class="stage">
+      <section class="card">
+        <h2>Pizza pecahan</h2>
+        <p class="hint">Bagian berwarna merah adalah pembilang. Seluruh potongan adalah penyebut.</p>
+        <div class="pizza-box">
+          <svg class="pizza" id="pizza" viewBox="0 0 320 320" role="img" aria-label="Visualisasi pizza pecahan"></svg>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Atur pecahan</h2>
+        <p class="hint">Pembilang tidak boleh lebih besar dari penyebut pada mode pizza utuh.</p>
+        <div class="controls">
+          <div class="ctrl">
+            <label>Pembilang (bagian yang diambil) <output id="numOut">3</output></label>
+            <input id="num" type="range" min="0" max="8" value="3" />
+          </div>
+          <div class="ctrl">
+            <label>Penyebut (jumlah potongan) <output id="denOut">8</output></label>
+            <input id="den" type="range" min="2" max="16" value="8" />
+          </div>
+          <div class="quick" id="presets">
+            <button type="button" data-n="1" data-d="2">1/2</button>
+            <button type="button" data-n="1" data-d="4">1/4</button>
+            <button type="button" data-n="3" data-d="4">3/4</button>
+            <button type="button" data-n="2" data-d="5">2/5</button>
+            <button type="button" data-n="3" data-d="8">3/8</button>
+            <button type="button" data-n="1" data-d="3">1/3</button>
+          </div>
+          <div class="eq" aria-live="polite">
+            <div class="eq-item">
+              <small>Pecahan</small>
+              <strong><span class="frac"><span class="num" id="fNum">3</span><span class="den" id="fDen">8</span></span></strong>
+            </div>
+            <div class="eq-op">=</div>
+            <div class="eq-item"><small>Desimal</small><strong id="decVal">0,375</strong></div>
+            <div class="eq-op">=</div>
+            <div class="eq-item"><small>Persen</small><strong id="pctVal">37,5%</strong></div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-label"><span>Besar bagian</span><span id="barTxt">37,5%</span></div>
+            <div class="bar"><span id="barFill"></span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <nav class="tabs" id="tabs" aria-label="Menu pelajaran">
+      <button type="button" class="active" data-id="konsep">1. Konsep</button>
+      <button type="button" data-id="desimal">2. Ke desimal</button>
+      <button type="button" data-id="persen">3. Ke persen</button>
+      <button type="button" data-id="tabel">4. Tabel cepat</button>
+    </nav>
+
+    <div class="accordion" id="accordion">
+      <article class="acc-item open" id="konsep">
+        <button type="button" class="acc-trigger" aria-expanded="true" data-id="konsep">
+          <span>
+            <h2>Konsep pecahan</h2>
+            <p class="hint">Pecahan menyatakan “berapa bagian dari keseluruhan yang sama besar”.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="acc-panel"><div class="acc-panel-inner"><div class="acc-body"><div class="steps" id="konsepSteps"></div></div></div></div>
+      </article>
+
+      <article class="acc-item" id="desimal">
+        <button type="button" class="acc-trigger" aria-expanded="false" data-id="desimal">
+          <span>
+            <h2>Mengubah pecahan ke desimal</h2>
+            <p class="hint">Desimal adalah hasil bagi pembilang dengan penyebut.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="acc-panel"><div class="acc-panel-inner"><div class="acc-body"><div class="steps" id="decSteps"></div></div></div></div>
+      </article>
+
+      <article class="acc-item" id="persen">
+        <button type="button" class="acc-trigger" aria-expanded="false" data-id="persen">
+          <span>
+            <h2>Mengubah pecahan ke persen</h2>
+            <p class="hint">Persen artinya “per seratus”. Kalikan desimal dengan 100, atau buat penyebut menjadi 100.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="acc-panel"><div class="acc-panel-inner"><div class="acc-body"><div class="steps" id="pctSteps"></div></div></div></div>
+      </article>
+
+      <article class="acc-item" id="tabel">
+        <button type="button" class="acc-trigger" aria-expanded="false" data-id="tabel">
+          <span>
+            <h2>Tabel pecahan yang sering muncul</h2>
+            <p class="hint">Klik baris untuk menampilkan pecahan itu di pizza.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="acc-panel">
+          <div class="acc-panel-inner">
+            <div class="acc-body">
+              <table>
+                <thead><tr><th>Pecahan</th><th>Desimal</th><th>Persen</th></tr></thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <footer>Simulasi terbuka untuk pembelajaran. by nurlyanto.</footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const numEl = $("num");
+    const denEl = $("den");
+    const pizza = $("pizza");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const common = [
+      [1,2,"0,5","50%"], [1,3,"0,333…","33,3…%"], [1,4,"0,25","25%"],
+      [1,5,"0,2","20%"], [2,5,"0,4","40%"], [1,8,"0,125","12,5%"],
+      [3,4,"0,75","75%"], [3,8,"0,375","37,5%"], [7,8,"0,875","87,5%"], [9,10,"0,9","90%"],
+    ];
+
+    function fmtDec(n) {
+      if (!isFinite(n)) return "—";
+      return (Math.round(n * 10000) / 10000).toString().replace(".", ",");
+    }
+    function fmtPct(n) {
+      return (Math.round(n * 10000) / 100).toString().replace(".", ",") + "%";
+    }
+    function polar(cx, cy, r, a) {
+      return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+    }
+    function slicePath(cx, cy, r, a0, a1) {
+      const [x0, y0] = polar(cx, cy, r, a0);
+      const [x1, y1] = polar(cx, cy, r, a1);
+      const large = (a1 - a0) > Math.PI ? 1 : 0;
+      return `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1} Z`;
+    }
+
+    function drawPizza(n, d) {
+      const cx = 160, cy = 160, r = 132;
+      let html = "";
+      html += `<circle cx="${cx}" cy="${cy}" r="${r + 14}" fill="#8b5a22" />`;
+      html += `<circle cx="${cx}" cy="${cy}" r="${r + 8}" fill="#c4843a" />`;
+      html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f4d03f" />`;
+      const toppings = [
+        [118, 92], [176, 86], [214, 128], [208, 186],
+        [156, 214], [104, 188], [96, 136], [150, 128],
+        [186, 158], [128, 164]
+      ];
+      const step = (Math.PI * 2) / d;
+      const start = -Math.PI / 2;
+      for (let i = 0; i < d; i++) {
+        const a0 = start + i * step;
+        const a1 = start + (i + 1) * step;
+        html += `<path d="${slicePath(cx, cy, r, a0, a1)}" fill="${i < n ? "#e74c3c" : "#f7e08a"}" stroke="#8b5a22" stroke-width="2.2" />`;
+      }
+      toppings.forEach(([x, y]) => {
+        const ang = Math.atan2(y - cy, x - cx);
+        let idx = Math.floor(((ang - start + Math.PI * 4) % (Math.PI * 2)) / step);
+        if (idx < 0) idx += d;
+        if (idx < n) {
+          html += `<circle cx="${x}" cy="${y}" r="9" fill="#6b2a12" /><circle cx="${x - 2}" cy="${y - 2}" r="3" fill="#8a3b1c" />`;
+        }
+      });
+      html += `<circle cx="${cx}" cy="${cy}" r="8" fill="#c4843a" stroke="#8b5a22" stroke-width="2" />`;
+      pizza.innerHTML = html;
+    }
+
+    function explain(n, d) {
+      const val = n / d;
+      $("konsepSteps").innerHTML = `
+        <div class="step"><div class="n">1</div><p>Pizza dipotong menjadi <code>${d}</code> bagian sama besar. Ini penyebut.</p></div>
+        <div class="step"><div class="n">2</div><p>Kita mengambil <code>${n}</code> potong. Ini pembilang.</p></div>
+        <div class="step"><div class="n">3</div><p>Ditulis <code>${n}/${d}</code> artinya “${n} dari ${d} bagian pizza”.</p></div>
+        <div class="step"><div class="n">4</div><p>Kalau pembilang = 0, pizza belum diambil. Kalau pembilang = ${d}, pizza habis (sama dengan 1).</p></div>`;
+      $("decSteps").innerHTML = `
+        <div class="step"><div class="n">1</div><p>Ingat ide kunci: pecahan = pembagian. Jadi <code>${n} ÷ ${d}</code>.</p></div>
+        <div class="step"><div class="n">2</div><p>Hasil baginya ${fmtDec(val)}. Inilah bentuk desimal.</p></div>
+        <div class="step"><div class="n">3</div><p>Boleh dicek balik: <code>${fmtDec(val)} × ${d} ≈ ${n}</code>.</p></div>
+        <div class="step"><div class="n">4</div><p>Jika hasilnya berulang (contoh 1/3), tulis <code>0,333…</code> — itu tetap benar.</p></div>`;
+      $("pctSteps").innerHTML = `
+        <div class="step"><div class="n">1</div><p>Persen artinya per 100. Ubah dulu ke desimal: <code>${fmtDec(val)}</code>.</p></div>
+        <div class="step"><div class="n">2</div><p>Kalikan 100: <code>${fmtDec(val)} × 100 = ${fmtDec(val * 100)}</code>.</p></div>
+        <div class="step"><div class="n">3</div><p>Tulis tanda %: <code>${fmtPct(val)}</code>.</p></div>
+        <div class="step"><div class="n">4</div><p>Arti nyata: dari 100 potongan imajiner yang sama, sekitar <code>${Math.round(val * 100)}</code> potong terambil.</p></div>`;
+    }
+
+    function render() {
+      let d = Number(denEl.value);
+      let n = Number(numEl.value);
+      numEl.max = d;
+      if (n > d) { n = d; numEl.value = d; }
+      $("numOut").textContent = n;
+      $("denOut").textContent = d;
+      $("fNum").textContent = n;
+      $("fDen").textContent = d;
+      const val = n / d;
+      $("decVal").textContent = fmtDec(val);
+      $("pctVal").textContent = fmtPct(val);
+      $("barTxt").textContent = fmtPct(val);
+      $("barFill").style.width = (val * 100) + "%";
+      drawPizza(n, d);
+      explain(n, d);
+    }
+
+    function openSection(id, scroll) {
+      document.querySelectorAll(".acc-item").forEach((el) => {
+        const on = el.id === id;
+        el.classList.toggle("open", on);
+        const btn = el.querySelector(".acc-trigger");
+        if (btn) btn.setAttribute("aria-expanded", on ? "true" : "false");
+      });
+      document.querySelectorAll(".tabs button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.id === id);
+      });
+      if (scroll) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      }
+    }
+
+    numEl.addEventListener("input", render);
+    denEl.addEventListener("input", render);
+    $("presets").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      denEl.value = b.dataset.d;
+      numEl.max = b.dataset.d;
+      numEl.value = b.dataset.n;
+      render();
+    });
+
+    $("tabs").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      openSection(b.dataset.id, true);
+    });
+    document.querySelectorAll(".acc-trigger").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        const item = document.getElementById(id);
+        if (item.classList.contains("open")) {
+          item.classList.remove("open");
+          btn.setAttribute("aria-expanded", "false");
+          document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("active"));
+          return;
+        }
+        openSection(id, true);
+      });
+    });
+
+    $("tableBody").innerHTML = common.map(([n, d, dec, pct]) =>
+      `<tr data-n="${n}" data-d="${d}"><td><strong>${n}/${d}</strong></td><td>${dec}</td><td>${pct}</td></tr>`
+    ).join("");
+    $("tableBody").addEventListener("click", (e) => {
+      const tr = e.target.closest("tr");
+      if (!tr) return;
+      denEl.value = tr.dataset.d;
+      numEl.max = tr.dataset.d;
+      numEl.value = tr.dataset.n;
+      render();
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    });
+
+    render();
+  </script>
+</body>
+</html>
